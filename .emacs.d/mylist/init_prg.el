@@ -33,7 +33,8 @@
   (define-key yas-minor-mode-map (kbd "TAB")    nil)
   (define-key yas-minor-mode-map (kbd "<tab>")  nil)
   :bind
-  (:map yas-minor-mode-map ("S-<tab>" . yas-expand)))
+  (:map yas-minor-mode-map ("S-<tab>" . yas-expand))
+  :after company)
 (use-package yasnippet-snippets
   :if (package-installed-p 'yasnippet-snippets)
   :after yasnippet)
@@ -54,10 +55,6 @@
 ;; 用于组织多个不同的命令
 (use-package hydra
   :if (package-installed-p 'hydra))
-;; 给`use-package`增加`:hydra`关键字
-(use-package use-package-hydra
-  :if (package-installed-p 'use-package-hydra)
-  :after hydra)
 
 
 ;; 目录树（可以切换Workspace，一个Workspace包括多个Project）
@@ -162,35 +159,37 @@
 
 (use-package multiple-cursors
   :if (package-installed-p 'multiple-cursors)
+  :init
+  (defhydra hydra-multiple-cursors (:exit nil :hint nil)
+    "
+  Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cursor%s(if (> (mc/num-cursors) 1) \"s\" \"\")
+  ------------------------------------------------------------------
+   [_p_]   Prev     [_n_]   Next     [_l_] Edit lines  [_0_] Insert numbers
+   [_P_]   Skip     [_N_]   Skip     [_a_] Mark all    [_A_] Insert letters
+   [_M-p_] Unmark   [_M-n_] Unmark   [_s_] Search      [_q_] Quit
+   [_|_] Align with input CHAR       [Click] Cursor at point"
+      ("l" mc/edit-lines :exit t)
+      ("a" mc/mark-all-like-this :exit t)
+      ("n" mc/mark-next-like-this)
+      ("N" mc/skip-to-next-like-this)
+      ("M-n" mc/unmark-next-like-this)
+      ("p" mc/mark-previous-like-this)
+      ("P" mc/skip-to-previous-like-this)
+      ("M-p" mc/unmark-previous-like-this)
+      ("|" mc/vertical-align)
+      ("s" mc/mark-all-in-region-regexp :exit t)
+      ("0" mc/insert-numbers :exit t)
+      ("A" mc/insert-letters :exit t)
+      ("<mouse-1>" mc/add-cursor-on-click)
+      ;; Help with click recognition in this hydra
+      ("<down-mouse-1>" ignore)
+      ("<drag-mouse-1>" ignore)
+      ("q" nil))
   :after hydra
   :bind
   (("C-c m" . hydra-multiple-cursors/body)
    ("C-S-<mouse-1>" . mc/toggle-cursor-on-click))
-  :hydra (hydra-multiple-cursors (:exit nil :hint nil)
-  "
-Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cursor%s(if (> (mc/num-cursors) 1) \"s\" \"\")
-------------------------------------------------------------------
- [_p_]   Prev     [_n_]   Next     [_l_] Edit lines  [_0_] Insert numbers
- [_P_]   Skip     [_N_]   Skip     [_a_] Mark all    [_A_] Insert letters
- [_M-p_] Unmark   [_M-n_] Unmark   [_s_] Search      [_q_] Quit
- [_|_] Align with input CHAR       [Click] Cursor at point"
-    ("l" mc/edit-lines :exit t)
-    ("a" mc/mark-all-like-this :exit t)
-    ("n" mc/mark-next-like-this)
-    ("N" mc/skip-to-next-like-this)
-    ("M-n" mc/unmark-next-like-this)
-    ("p" mc/mark-previous-like-this)
-    ("P" mc/skip-to-previous-like-this)
-    ("M-p" mc/unmark-previous-like-this)
-    ("|" mc/vertical-align)
-    ("s" mc/mark-all-in-region-regexp :exit t)
-    ("0" mc/insert-numbers :exit t)
-    ("A" mc/insert-letters :exit t)
-    ("<mouse-1>" mc/add-cursor-on-click)
-    ;; Help with click recognition in this hydra
-    ("<down-mouse-1>" ignore)
-    ("<drag-mouse-1>" ignore)
-    ("q" nil)))
+)
 ;; <C-;>  用于代码重构，同步修改所有Symbol名称
 (use-package iedit
   :if (package-installed-p 'iedit))
