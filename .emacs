@@ -19,7 +19,7 @@
    '(("gnu" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
      ("melpa" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")))
  '(package-selected-packages
-   '(iedit multiple-cursors tiny treemacs-projectile yasnippet-snippets htmlize yasnippet unicad marginalia orderless vertico undo-tree rg which-key company))
+   '(highlight-symbol iedit multiple-cursors tiny treemacs-projectile yasnippet-snippets htmlize yasnippet unicad marginalia orderless vertico undo-tree rg which-key company))
  '(prog-mode-hook
    '(flymake-mode prettify-symbols-mode electric-pair-mode hs-minor-mode show-paren-mode))
  '(recentf-mode t)
@@ -35,9 +35,10 @@
  '(whitespace-line ((t nil))))
 
 (put 'narrow-to-region 'disabled nil)
-(global-set-key (kbd "C-.") 'set-mark-command)
-(global-set-key (kbd "C-x C-.") 'pop-global-mark)
+(global-set-key (kbd "C-,") 'set-mark-command)
+(global-set-key (kbd "C-x C-,") 'pop-global-mark)
 
+;; 安装Package: unicad undo-tree marginalia orderless vertico which-key
 
 ;; 设置默认编码
 (prefer-coding-system 'utf-8)
@@ -52,25 +53,6 @@
   :if (package-installed-p 'undo-tree)
   :custom (undo-tree-auto-save-history nil)
   :hook (after-init . global-undo-tree-mode))
-
-
-;; <C-x 0>删除当前窗口
-;; <C-x 1>最大化当前窗口（删除其它窗口）
-;; <C-x 2>在下方新建窗口
-;; <C-x 3>在右侧新建窗口
-;; <C-o>选择另一个的窗口（超过2个窗口时，提示窗口序号）
-(use-package ace-window
-  :if (package-installed-p 'ace-window)
-  :bind (("C-x o" . 'ace-window)))
-
-
-;; <C-'>直接跳转到指定匹配位置（<C-s>/<C-r>搜索过程中使用）
-;;      跳转前输入<?>，显示可用的高级操作
-(use-package avy
-  :if (package-installed-p 'avy)
-  ; :bind (("C-j" . 'avy-goto-char-timer))
-  :config (avy-setup-default))
-
 
 ;; minibuffer补全
 ;; 1. 竖式展开小缓冲区

@@ -1,3 +1,5 @@
+;; 安装Package: highlight-symbol iedit multiple-cursors tiny treemacs-projectile yasnippet-snippets yasnippet rg company
+
 ;; 自动补全
 ;; <M-/>     尝试根据上下文补全
 ;; <Tab>     自动补全Company
@@ -44,18 +46,34 @@
   :if (package-installed-p 'tiny)
   :hook (after-init . (lambda () (global-set-key (kbd "C-<tab>") 'tiny-expand))))
 
+;; <C-x 0>删除当前窗口
+;; <C-x 1>最大化当前窗口（删除其它窗口）
+;; <C-x 2>在下方新建窗口
+;; <C-x 3>在右侧新建窗口
+;; <C-o>选择另一个的窗口（超过2个窗口时，提示窗口序号）
+(use-package ace-window
+  :if (package-installed-p 'ace-window)
+  :bind (("C-x o" . 'ace-window)))
 
 ;; ripgrep插件
 ;; Prefix: <C-c s>
+;; 在检索结果中直接修改文件（配合iedit）
+;;; 1. 使用rg检索，切换到检索结果Buffer
+;;; 2. <C-c C-p>进入wgrep模式
+;;; 3. 光标移动到需要修改的单词上，<C-;>进入iedit模式
+;;; 4. 批量修改，<C-;>退出iedit模式
+;;; 5. <C-x C-s>/<C-c C-k>保存/放弃变更，并退出wgrep模式
+;; .rgignore文件示例（影响ripgrep，可保存在.projectile文件同目录）
+;;; /foo/bar/abc
+;;; *.html
+;;; tests
 (use-package rg :defer t
   :if (package-installed-p 'rg)
   :hook (after-init . rg-enable-default-bindings))
 
-
 ;; 用于组织多个不同的命令
 (use-package hydra
   :if (package-installed-p 'hydra))
-
 
 ;; 目录树（可以切换Workspace，一个Workspace包括多个Project）
 ;; <C-x t t>  Toggle目录树
@@ -145,7 +163,13 @@
         ("C-x t B"   . treemacs-bookmark)
         ("C-x t C-t" . treemacs-find-file)
         ("C-x t M-t" . treemacs-find-tag)))
+
 ;; 自动识别项目根目录（.git目录、.projectile文件等方式）
+;; .projectile文件示例（影响projectile中查找文件，首先使用"+"规则筛选范围，然后使用"-"规则进一步筛选）
+;;; +/foo/bar
+;;; -/foo/bar/abc
+;;; -*.html
+;;; -tests
 ;; Prefix: <C-c p>
 (use-package projectile :defer t
   :if (package-installed-p 'projectile)
@@ -155,7 +179,6 @@
 (use-package treemacs-projectile
   :if (package-installed-p 'treemacs-projectile)
   :after (treemacs projectile))
-
 
 (use-package multiple-cursors
   :if (package-installed-p 'multiple-cursors)
@@ -188,12 +211,25 @@
   :after hydra
   :bind
   (("C-c m" . hydra-multiple-cursors/body)
-   ("C-S-<mouse-1>" . mc/toggle-cursor-on-click))
-)
+   ("C-S-<mouse-1>" . mc/toggle-cursor-on-click)))
+;; <M-s h .>  高亮当前Symbol
+;; <M-s h p>  高亮指定短语
+;; <M-s h r>  高亮指定正则表达式
+;; <M-s h u>  选取要取消的高亮
+(use-package highlight-symbol :defer t
+  :if (package-installed-p 'highlight-symbol)
+  :hook
+  (prog-mode . highlight-symbol-mode)
+  (org-mode . highlight-symbol-mode))
 ;; <C-;>  用于代码重构，同步修改所有Symbol名称
 (use-package iedit
   :if (package-installed-p 'iedit))
-
+;; <C-'>直接跳转到指定匹配位置（<C-s>/<C-r>搜索过程中使用）
+;;      跳转前输入<?>，显示可用的高级操作
+(use-package avy
+  :if (package-installed-p 'avy)
+  ; :bind (("C-j" . 'avy-goto-char-timer))
+  :config (avy-setup-default))
 
 ;; python环境准备
 ;;   pip install 'python-language-server[all]'
