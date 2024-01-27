@@ -1,4 +1,8 @@
-;; 安装Package: highlight-symbol iedit multiple-cursors tiny treemacs-projectile yasnippet-snippets yasnippet rg company
+;; 安装Package: markdown-mode highlight-symbol iedit multiple-cursors tiny treemacs-projectile yasnippet-snippets yasnippet rg company
+
+(use-package markdown-mode
+  :if (package-installed-p 'markdown-mode)
+  :init (setq markdown-command '("pandoc" "--from=markdown" "--to=html5")))
 
 ;; 自动补全
 ;; <M-/>     尝试根据上下文补全
@@ -21,6 +25,7 @@
   :hook
   (prog-mode . yas-minor-mode)
   (org-mode . yas-minor-mode)
+  (markdown-mode . yas-minor-mode)
   :config
   (yas-reload-all)
   ;; add company-yasnippet to company-backends

@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: plantuml
+# key: plantuml_
+# --
+![${1:Alt Text}](${2:`(format-time-string "%Y%m%d%H%M%S")`.png})
+<!--
+#+begin_src plantuml :file $2 :cmdline -charset UTF-8 :cache yes
+skinparam defaultFontName "Microsoft YaHei"
+$0
+#+end_src
+-->

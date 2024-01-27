@@ -19,7 +19,7 @@
    '(("gnu" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
      ("melpa" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")))
  '(package-selected-packages
-   '(highlight-symbol iedit multiple-cursors tiny treemacs-projectile yasnippet-snippets htmlize yasnippet unicad marginalia orderless vertico undo-tree rg which-key company))
+   '(markdown-mode highlight-symbol iedit multiple-cursors tiny treemacs-projectile yasnippet-snippets htmlize yasnippet unicad marginalia orderless vertico undo-tree rg which-key company))
  '(prog-mode-hook
    '(flymake-mode prettify-symbols-mode electric-pair-mode hs-minor-mode show-paren-mode))
  '(recentf-mode t)
