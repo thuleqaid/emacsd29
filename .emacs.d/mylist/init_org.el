@@ -34,6 +34,7 @@
      (sql . nil)
      (sqlite . nil)))
   (define-key org-mode-map (kbd "C-M-<up>") 'org-up-element)
+  (keymap-unset org-mode-map "C-,")
   :custom
   (org-support-shift-select t)
   (org-use-sub-superscripts nil))
@@ -94,8 +95,20 @@
              (dirname (directory-file-name (file-name-directory fullpath))))
         (unless (file-accessible-directory-p dirname)
           (make-directory dirname))
+        (unless (file-exists-p fullpath)
+          (org-babel-remove-result))
         (org-babel-execute-src-block))
       )
+    (major-mode-restore)
+    ))
+(defun thuleqaid/org-babel-clear-result ()
+  (interactive)
+  (save-excursion
+    (major-mode-suspend)
+    (org-mode)
+    (goto-char (point-min)) ; replace outfile name
+    (while (re-search-forward "^\\(\\s *#\\+begin_src \\(?:plantuml\\|gnuplot\\|dot\\) :file \\S +\\.\\)\\(\\S +\\) " nil t)
+      (org-babel-remove-result))
     (major-mode-restore)
     ))
 ;; (defun thuleqaid/org-insert-sub-file ()
