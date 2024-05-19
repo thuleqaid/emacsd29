@@ -38,4 +38,56 @@
     )
   )
 
+(defun thuleqaid/text-macro-load ()
+  "加载文本处理模块"
+  (interactive)
+  (let ((prompt "Macro file to load: ")
+        (initial-input nil)
+        (action nil)
+        (choices '())
+        res)
+    (dolist (elt
+             (directory-files (expand-file-name "mylist/macros" user-emacs-directory) nil "\.el$")
+             choices)
+      (setq choices (cons (cons (file-name-base elt) t) choices)))
+    (setq res
+          (pcase (if (eq projectile-completion-system 'auto)
+                     (cond
+                      ((bound-and-true-p ido-mode)  'ido)
+                      ((bound-and-true-p helm-mode) 'helm)
+                      ((bound-and-true-p ivy-mode)  'ivy)
+                      (t 'default))
+                   projectile-completion-system)
+            ('default (completing-read prompt choices nil nil initial-input))
+            ('ido (ido-completing-read prompt choices nil nil initial-input))
+            ('helm
+             (if (and (fboundp 'helm)
+                      (fboundp 'helm-make-source))
+                 (helm :sources
+                       (helm-make-source "Projectile" 'helm-source-sync
+                                         :candidates choices
+                                         :action (if action
+                                                     (prog1 action
+                                                       (setq action nil))
+                                                   #'identity))
+                       :prompt prompt
+                       :input initial-input
+                       :buffer "*helm-projectile*")
+               (user-error "Please install helm")))
+            ('ivy
+             (if (fboundp 'ivy-read)
+                 (ivy-read prompt choices
+                           :initial-input initial-input
+                           :action (prog1 action
+                                     (setq action nil))
+                           :caller 'projectile-completing-read)
+               (user-error "Please install ivy")))
+            (_ (funcall projectile-completion-system prompt choices))))
+    ;; (if action
+    ;;     (funcall action res)
+    ;;   res)
+    (load (format "macros/%s" res))
+    )
+  )
+
 (provide 'init_macro)
