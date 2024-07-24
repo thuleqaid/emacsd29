@@ -78,7 +78,7 @@
       (while (re-search-forward "^\\(\\s *set term \\)\\(\\S +\\) " nil t)
         (replace-match (format "\\1%s " image-format)))
       (goto-char (point-min)) ; replace outfile name
-      (while (re-search-forward "^\\(\\s *#\\+begin_src \\(?:plantuml\\|gnuplot\\|dot\\) :file \\S +\\.\\)\\(\\S +\\) " nil t)
+      (while (re-search-forward "^\\(\\s *#\\+begin_src\\s +\\(?:plantuml\\|gnuplot\\|dot\\)\\s +\\(?:.*\\s +\\)?:file \\S +\\.\\)\\(\\S +\\)\\s +" nil t)
         (replace-match (format "\\1%s " image-format)))
       )))
 (defun thuleqaid/org-babel-batch-src ()
@@ -87,7 +87,7 @@
     (major-mode-suspend)
     (org-mode)
     (goto-char (point-min)) ; replace outfile name
-    (while (re-search-forward "^\\(\\s *#\\+begin_src \\(?:plantuml\\|gnuplot\\|dot\\) :file \\S +\\.\\)\\(\\S +\\) " nil t)
+    (while (re-search-forward "^\\(\\s *#\\+begin_src\\s +\\(?:plantuml\\|gnuplot\\|dot\\)\\s +\\(?:.*\\s +\\)?:file \\S +\\.\\)\\(\\S +\\)\\s +" nil t)
       (let* ((info (org-babel-get-src-block-info))
              (params (nth 2 info))
              (file (cdr (assq :file params)))
@@ -107,7 +107,7 @@
     (major-mode-suspend)
     (org-mode)
     (goto-char (point-min)) ; replace outfile name
-    (while (re-search-forward "^\\(\\s *#\\+begin_src \\(?:plantuml\\|gnuplot\\|dot\\) :file \\S +\\.\\)\\(\\S +\\) " nil t)
+    (while (re-search-forward "^\\(\\s *#\\+begin_src\\s +\\(?:plantuml\\|gnuplot\\|dot\\)\\s +\\(?:.*\\s +\\)?:file \\S +\\.\\)\\(\\S +\\)\\s +" nil t)
       (org-babel-remove-result))
     (major-mode-restore)
     ))
