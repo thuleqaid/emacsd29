@@ -1,4 +1,16 @@
-;; 安装Package: markdown-mode highlight-symbol iedit multiple-cursors tiny treemacs-projectile yasnippet-snippets yasnippet rg company
+;; 安装Package: smart-mode-line markdown-mode highlight-symbol iedit multiple-cursors tiny treemacs-projectile yasnippet-snippets yasnippet rg company
+
+(use-package smart-mode-line
+  :if (package-installed-p 'smart-mode-line)
+  :init
+  (setq sml/no-confirm-load-theme t)  ; avoid asking when startup
+  (sml/setup)
+  :config
+  (setq rm-blacklist
+    (format "^ \\(%s\\)$"
+      (mapconcat #'identity
+        '("Projectile.*" "company.*" "Undo-Tree" "yas" "WK" "WS" "ElDoc" "Abbrev" "Unicad" "hl-s" "Flymake.*" "hs")
+         "\\|"))))
 
 (use-package markdown-mode
   :if (package-installed-p 'markdown-mode)
@@ -217,7 +229,8 @@
   :bind
   (("C-c m" . hydra-multiple-cursors/body)
    ("C-S-<mouse-1>" . mc/toggle-cursor-on-click)))
-;; <M-s h .>  高亮当前Symbol
+;; <M-s h .>  高亮/取消高亮当前Symbol
+;; <M-s h U>  取消所有高亮
 ;; <M-s h p>  高亮指定短语
 ;; <M-s h r>  高亮指定正则表达式
 ;; <M-s h u>  选取要取消的高亮
@@ -225,7 +238,9 @@
   :if (package-installed-p 'highlight-symbol)
   :hook
   (prog-mode . highlight-symbol-mode)
-  (org-mode . highlight-symbol-mode))
+  (org-mode . highlight-symbol-mode)
+  :bind
+  (("M-s h U" . highlight-symbol-remove-all)))
 ;; <C-;>  用于代码重构，同步修改所有Symbol名称
 (use-package iedit
   :if (package-installed-p 'iedit))
@@ -236,6 +251,10 @@
   ; :bind (("C-j" . 'avy-goto-char-timer))
   :config (avy-setup-default))
 
+;; <C-M-f>/<C-M-b> 匹配括号之间跳转
+;; <C-M-h>         选中当前函数
+;; <C-M-a>/<C-M-e> 跳转到函数头/尾
+(add-hook 'prog-mode-hook 'which-function-mode)
 ;; python环境准备
 ;;   pip install 'python-language-server[all]'
 (add-hook 'python-mode-hook 'eglot-ensure)
