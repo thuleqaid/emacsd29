@@ -1,6 +1,6 @@
-;; 安装Package: smart-mode-line markdown-mode highlight-symbol iedit multiple-cursors tiny treemacs-projectile yasnippet-snippets yasnippet rg company
+;; 安装Package: ggtags smart-mode-line markdown-mode highlight-symbol iedit multiple-cursors tiny treemacs-projectile yasnippet-snippets yasnippet rg company
 
-(use-package smart-mode-line
+(use-package smart-mode-line :defer t
   :if (package-installed-p 'smart-mode-line)
   :init
   (setq sml/no-confirm-load-theme t)  ; avoid asking when startup
@@ -9,12 +9,13 @@
   (setq rm-blacklist
     (format "^ \\(%s\\)$"
       (mapconcat #'identity
-        '("Projectile.*" "company.*" "Undo-Tree" "yas" "WK" "WS" "ElDoc" "Abbrev" "Unicad" "hl-s" "Flymake.*" "hs")
+        '("Projectile.*" "company.*" "Undo-Tree" "yas" "WK" "WS" "ElDoc" "Abbrev" "Unicad" "hl-s" "Flymake.*" "hs" "GG")
          "\\|"))))
 
-(use-package markdown-mode
+(use-package markdown-mode :defer t
   :if (package-installed-p 'markdown-mode)
-  :init (setq markdown-command '("pandoc" "--from=markdown" "--to=html5")))
+  :init (when (executable-find "pandoc")
+          (setq markdown-command '("pandoc" "--from=markdown" "--to=html5"))))
 
 ;; 自动补全
 ;; <M-/>     尝试根据上下文补全
@@ -43,7 +44,7 @@
   ;; add company-yasnippet to company-backends
   (defun company-mode/backend-with-yas (backend)
     (if (and (listp backend) (member 'company-yasnippet backend))
-	backend
+        backend
       (append (if (consp backend) backend (list backend))
               '(:with company-yasnippet))))
   (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
@@ -54,7 +55,7 @@
   :bind
   (:map yas-minor-mode-map ("S-<tab>" . yas-expand))
   :after company)
-(use-package yasnippet-snippets
+(use-package yasnippet-snippets :defer t
   :if (package-installed-p 'yasnippet-snippets)
   :after yasnippet)
 ;; 按指定规律扩展文字
@@ -68,7 +69,7 @@
 ;; <C-x 2>在下方新建窗口
 ;; <C-x 3>在右侧新建窗口
 ;; <C-o>选择另一个的窗口（超过2个窗口时，提示窗口序号）
-(use-package ace-window
+(use-package ace-window :defer t
   :if (package-installed-p 'ace-window)
   :bind (("C-x o" . 'ace-window)))
 
@@ -85,11 +86,11 @@
 ;;; *.html
 ;;; tests
 (use-package rg :defer t
-  :if (package-installed-p 'rg)
+  :if (and (package-installed-p 'rg) (executable-find "rg"))
   :hook (after-init . rg-enable-default-bindings))
 
 ;; 用于组织多个不同的命令
-(use-package hydra
+(use-package hydra :defer t
   :if (package-installed-p 'hydra))
 
 ;; 目录树（可以切换Workspace，一个Workspace包括多个Project）
@@ -193,11 +194,12 @@
   :init (projectile-mode +1)
   :bind (:map projectile-mode-map
               ("C-c p" . projectile-command-map)))
-(use-package treemacs-projectile
+(use-package treemacs-projectile :defer t
   :if (package-installed-p 'treemacs-projectile)
   :after (treemacs projectile))
 
-(use-package multiple-cursors
+;; 需要手动调整~/.emacs.d/.mc-lists.el文件中的run-once和run-for-all数组
+(use-package multiple-cursors :defer t
   :if (package-installed-p 'multiple-cursors)
   :init
   (defhydra hydra-multiple-cursors (:exit nil :hint nil)
@@ -240,23 +242,64 @@
   (prog-mode . highlight-symbol-mode)
   (org-mode . highlight-symbol-mode)
   :bind
-  (("M-s h U" . highlight-symbol-remove-all)))
+  (("M-s h U" . highlight-symbol-remove-all))
+  :config
+  (defun highlight-symbol-count (&optional symbol)
+    (interactive)
+    )
+  )
 ;; <C-;>  用于代码重构，同步修改所有Symbol名称
-(use-package iedit
+(use-package iedit :defer t
   :if (package-installed-p 'iedit))
 ;; <C-'>直接跳转到指定匹配位置（<C-s>/<C-r>搜索过程中使用）
 ;;      跳转前输入<?>，显示可用的高级操作
-(use-package avy
+(use-package avy :defer t
   :if (package-installed-p 'avy)
   ; :bind (("C-j" . 'avy-goto-char-timer))
   :config (avy-setup-default))
 
+(use-package ggtags :defer t
+  :if (and (package-installed-p 'ggtags) (executable-find "gtags"))
+  :hook (c-mode . ggtags-mode)
+  :config
+  (defun thuleqaid/gtags-generate ()
+    (interactive)
+    (when (and (package-installed-p 'projectile) (executable-find "rg") (not (string= (projectile-project-name) "-")))
+      (let* ((default-directory (projectile-acquire-root))
+             (rgignore (expand-file-name ".rgignore" default-directory))
+             )
+        (when (file-exists-p rgignore)
+          (with-current-buffer (get-buffer-create " __FILE_LIST__" t)
+            (erase-buffer)
+            ;; rg -l . --hidden > filelist.txt
+            (call-process "rg" nil t nil "-l" "." "--hidden")
+            ;; gtags -f filelist.txt
+            (call-process-region (point-min) (point-max) "gtags" nil t nil "-f" "-")
+            (kill-buffer)
+            )
+          )
+        )
+      )
+    )
+  )
+
 ;; <C-M-f>/<C-M-b> 匹配括号之间跳转
 ;; <C-M-h>         选中当前函数
 ;; <C-M-a>/<C-M-e> 跳转到函数头/尾
+;; 显示当前函数名
 (add-hook 'prog-mode-hook 'which-function-mode)
+
+(use-package eglot :defer t
+  :hook
+  (python-mode . eglot-ensure)
+  (c-mode . eglot-ensure)
+  (c++-mode . eglot-ensure)
+  :config
+  (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
+  )
+
 ;; python环境准备
 ;;   pip install 'python-language-server[all]'
-(add-hook 'python-mode-hook 'eglot-ensure)
-
+;; c/c++环境准备
+;;   https://github.com/mstorsjo/llvm-mingw/releases
 (provide 'init_prg)
