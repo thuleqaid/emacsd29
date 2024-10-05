@@ -288,6 +288,13 @@
 ;; <C-M-a>/<C-M-e> 跳转到函数头/尾
 ;; 显示当前函数名
 (add-hook 'prog-mode-hook 'which-function-mode)
+(defun thuleqaid/prg-mono-font ()
+  (when (string= system-type "windows-nt")
+    (defface fate-buffer-face '((t :family "MS Gothic" :foundry "outline" :slant normal :weight regular :height 120 :width normal)) "Prg buffer mono font")
+    (buffer-face-set 'fate-buffer-face)
+    )
+  )
+(add-hook 'prog-mode-hook 'thuleqaid/prg-mono-font)
 
 (use-package eglot :defer t
   :hook
