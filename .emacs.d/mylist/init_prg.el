@@ -87,7 +87,32 @@
 ;;; tests
 (use-package rg :defer t
   :if (and (package-installed-p 'rg) (executable-find "rg"))
-  :hook (after-init . rg-enable-default-bindings))
+  :hook (after-init . rg-enable-default-bindings)
+  :config
+  (defun thuleqaid/copy-rg-result()
+    "Extract rg result"
+    (interactive)
+    (let ((buf (get-buffer "*rg*"))
+          text)
+      (when buf
+        (with-current-buffer buf
+          (setq text (buffer-substring-no-properties (point-min) (point-max))
+                text (replace-regexp-in-string "[\t ]+" " " text)
+                text (replace-regexp-in-string "^ +\\([0-9]+\\) +\\([0-9]+\\) +" "\\1\t\\2\t" text)
+                text (mapconcat (lambda (item)
+                                  (if (string-match-p "^\\(File\\|[0-9]\\)" item) item ""))
+                                (string-lines text) "\n")
+                text (replace-regexp-in-string "^ *\n" "" text)
+                )
+          (kill-new text)
+          (message "Copied")
+          ))
+      )
+    )
+  :bind
+  (:map rg-mode-map
+        ("C-c c" . thuleqaid/copy-rg-result))
+  )
 
 ;; 用于组织多个不同的命令
 (use-package hydra :defer t
