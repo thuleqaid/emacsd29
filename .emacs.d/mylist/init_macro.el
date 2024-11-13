@@ -1,16 +1,16 @@
 ;; 文本处理宏框架
 
-(defun thuleqaid/textmacro(func)
+(defun thuleqaid/textmacro(func arg)
   "全文/指定范围内文本处理框架
 
 按行提取文本，调用传入的函数参数生成新的文本，然后替换原文本
 
 使用示例：
-(defun text-actor-XXX (list)
+(defun text-actor-XXX (list arg)
   (reverse list))
-(defun text-macro-XXX()
-  (interactive)
-  (thuleqaid/textmacro 'text-actor-XXX)
+(defun text-macro-XXX(&optional arg)
+  (interactive \"P\")
+  (thuleqaid/textmacro 'text-actor-XXX arg)
   )
 "
   (let (
@@ -31,7 +31,7 @@
       (setq lines (reverse lines))
       ;; (prin1 lines)
       )
-    (setq lines (funcall func lines))
+    (setq lines (funcall func lines arg))
     (delete-region pos1 pos2)
     (insert (string-join lines "\n"))
     (insert "\n")

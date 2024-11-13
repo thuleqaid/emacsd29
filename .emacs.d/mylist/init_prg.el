@@ -669,7 +669,7 @@
   :if (package-installed-p 'iedit))
 ;; <C-'>直接跳转到指定匹配位置（<C-s>/<C-r>搜索过程中使用）
 ;;      跳转前输入<?>，显示可用的高级操作
-(use-package avy :defer t
+(use-package avy
   :if (package-installed-p 'avy)
   ; :bind (("C-j" . 'avy-goto-char-timer))
   :config (avy-setup-default))

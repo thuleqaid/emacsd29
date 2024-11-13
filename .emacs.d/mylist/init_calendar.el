@@ -61,7 +61,7 @@
   ;; (calendar-fate-chinese-datetime '(month day year hour minute second)): 计算JD
   ;; (calendar-fate-chinese-from-absolute JD): JD转换成干支日期(9运 年 月 日 时 上1个24节气)
   ;; (calendar-fate-gregorian-from-absolute JD): 计算指定JD的公历时间(month day year hour minute second)
-  ;; (fate-solar-item-info year index): 计算指定年份的指定24节气(-1~24)的公历时间(month day year hour minute second)
+  ;; (fate-solar-item-info year index): 计算指定年份的指定24节气(-1~25)的公历时间(month day year hour minute second)，节气1表示立春
   ;; (calendar-fate-chinese-sexagesimal-name n): 60甲子名称
   ;; (calendar-fate-chinese-term-name n): 24节气名称
   
@@ -193,7 +193,7 @@
         ;; 使用year对应数据
         (setq absolute (cadr (assoc index (calendar-fate-chinese-year year))))
         )
-       ((<= index 24)
+       ((<= index 25)
         ;; 使用year+1对应数据
         (setq absolute (cadr (assoc (- index 24) (calendar-fate-chinese-year (1+ year)))))
         )

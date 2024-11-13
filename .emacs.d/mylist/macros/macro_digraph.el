@@ -1,14 +1,11 @@
-(defun text-actor-levels (lines _arg)
+(defun text-actor-digraph (lines arg)
   (let ((pat "^\\([ \t]*\\)")
         (prefix "")
         (prefixlen 0)
         (levels '())
         (contents '())
-        (outlines '())
-        ;; (marks '("    " "+---" "|   " "+---"))
-        (marks '("　　" "┣━" "┃　" "┗━"))
         indent indentlen indentpat
-        tmp i j k l val
+        tmp i
         )
     ;; 提取第1行前面的空白作为Prefix
     (setq tmp (string-trim-right (car lines)))
@@ -53,54 +50,37 @@
       )
     (if (<= (length levels) 1)
         lines
-      (progn
+      (let ((pairs '())
+            (cstacks '())
+            curlevel curcontent outlines
+            )
         (setq levels (reverse levels)
               contents (reverse contents)
-              outlines (cons (format "%s%s" prefix (car contents)) outlines))
-        ;; 计算每行前的Mark
-        (setq l 1
-              tmp "")
-        (while (< l (length levels))
-          (setq i 1
-                val (nth l levels))
-          ;; 计算第l行第i层的Mark
-          (while (<= i val)
-            ;; 假设是相同Level的最后一个
-            (setq k (if (= i val) 3 0)
-                  j (1+ l))
-            (while (< j (length levels))
-              (if (= (nth j levels) i)
-                  ;; 下方找到相同Level的
-                  (setq k (if (= i val) 1 2)
-                        j (length levels))
-                (when (< (nth j levels) i)
-                  ;; 下方找到更深Level的
-                  (setq k (if (= i val) 3 0)
-                        j (length levels))
-                  )
-                )
-              (setq j (1+ j))
-              )
-            (setq tmp (concat tmp (nth k marks))
-                  i (1+ i))
+              cstacks (cons (cons (pop levels) (string-trim (pop contents))) cstacks))
+        (while (> (length levels) 0)
+          (setq curlevel (pop levels)
+                curcontent (string-trim (pop contents)))
+          (while (<= curlevel (caar cstacks))
+            (pop cstacks)
             )
-          ;; (message "%s%s" tmp (nth l contents))
-          (setq outlines (cons (format "%s%s%s" prefix tmp (nth l contents)) outlines)
-                l (1+ l)
-                tmp "")
+          (add-to-list 'pairs (cons (cdar cstacks) curcontent))
+          (push (cons curlevel curcontent) cstacks)
           )
-        (while (< l (length lines))
-          (setq outlines (cons (nth l lines) outlines)
-                l (1+ l))
+        (if arg
+            (setq outlines (mapcar (lambda(item) (format "%s\"%s\" -> \"%s\";" prefix (car item) (cdr item))) pairs))
+          (setq outlines (mapcar (lambda(item) (format "%s\"%s\" -> \"%s\";" prefix (cdr item) (car item))) pairs))
           )
-        (reverse outlines)
+        (push (format "%s}" prefix) outlines)
+        (setq outlines (reverse outlines))
+        (push (format "%sdigraph G {" prefix) outlines)
+        (push (format "%s// dot inputfile -Tpng -o outputfile" prefix) outlines)
         )
       )
     )
   )
 
-(defun text-macro-levels(&optional arg)
-  "根据缩进绘制目录结构图
+(defun text-macro-digraph(&optional arg)
+  "根据缩进生成Graphviz的dot文件digraph文本
 
 输入文本格式：
 aaa
@@ -111,14 +91,15 @@ aaa
     fff
         ggg
 输出文本格式：
-aaa
-┣━bbb
-┃　┣━ccc
-┃　┗━ddd
-┣━eee
-┗━fff
-　　┗━ggg
+digraph G {
+bbb -> aaa;
+ccc -> bbb;
+ddd -> bbb;
+eee -> aaa;
+fff -> aaa;
+ggg -> fff;
+}
 "
   (interactive "P")
-  (thuleqaid/textmacro 'text-actor-levels arg)
+  (thuleqaid/textmacro 'text-actor-digraph arg)
   )
